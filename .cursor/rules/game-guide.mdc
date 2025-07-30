@@ -1,0 +1,217 @@
+# 🧠 英文對答遊戲規格書
+
+## 🎯 遊戲目標
+
+透過互動式遊戲提升玩家英文理解力與句構辨識能力，透過分類、題型設計逐步由淺入深建立英文對答實力。
+
+---
+
+## 📁 題目分類（Categories）
+
+* 日常生活（Daily Conversation）
+* 旅遊與交通（Travel & Transport）
+* 商業英語（Business English）
+* 校園生活（Campus Life）
+* 健康與醫療（Health & Medical）
+
+> ✅ 玩家可以自行選擇題目分類，也可複選多個分類混合出題 ✅ 題目順序可隨機打亂（shuffle） ✅ 玩家可自訂題目數量（例如：出題 5 題、10 題）
+
+---
+
+## 🧩 題型設計（Question Types）
+
+### 1. 選擇題（Multiple Choice）
+
+* **規則：** 每題顯示一句話，其中有一個空格，提供 4 個選項讓使用者選出正確答案。
+
+* **範例：**
+
+  > I \_\_\_ to the gym every morning.
+  >
+  > a) go
+  > b) going
+  > c) gone
+  > d) goes
+
+* **答案格式：**
+
+  ```json
+  {
+    "type": "multiple_choice",
+    "question": "I ___ to the gym every morning.",
+    "options": ["go", "going", "gone", "goes"],
+    "answer": "go"
+  }
+  ```
+
+---
+
+### 2. 多重填空題（Multi-Fill-in-the-Blank）
+
+* **規則：** 題目為一完整句子，有 2\~3 個空格，提供 5 個單字選項，使用者需從中選出正確的 3 個依順序填入。
+
+* **特點：** 檢測語意邏輯與語法結構。
+
+* **範例：**
+
+  > I usually \_\_\_ up at 7 AM, then I \_\_\_ breakfast and \_\_\_ to work.
+  >
+  > 選項： \["go", "eat", "wake", "drink", "run"]
+
+* **答案格式：**
+
+  ```json
+  {
+    "type": "multi_blank",
+    "question": "I usually ___ up at 7 AM, then I ___ breakfast and ___ to work.",
+    "options": ["go", "eat", "wake", "drink", "run"],
+    "answers": ["wake", "eat", "go"]
+  }
+  ```
+
+---
+
+## 👥 多人互動功能（Multiplayer Support）
+
+* **上線對答機制**：
+
+  * 玩家可登入後加入遊戲房間（Room）進行同步作答。
+  * 每題倒數計時並即時顯示其他玩家答題進度。
+  * 完成後顯示排行榜與每位玩家的正確率。
+
+* **房間結構建議：**
+
+  ```ts
+  interface GameRoom {
+    room_id: string
+    players: Player[]
+    current_question: QuizQuestion
+    round: number
+    status: 'waiting' | 'in_progress' | 'finished'
+  }
+
+  interface Player {
+    id: string
+    name: string
+    score: number
+    answered: boolean
+  }
+  ```
+
+* 支援 WebSocket / Socket.IO 實作多人即時答題互動。
+
+* 排名可依照答對數量、答題時間加權排列，支援即時排行榜：
+
+  ```ts
+  interface RankingItem {
+    player_id: string
+    name: string
+    correct_answers: number
+    total_time: number // 單位：秒
+  }
+  ```
+
+---
+
+## 📊 題目資料結構（JSON Schema）
+
+```ts
+interface QuestionBase {
+  id: string
+  category: string // e.g., "Daily Conversation"
+  difficulty: 'easy' | 'medium' | 'hard'
+}
+
+interface MultipleChoiceQuestion extends QuestionBase {
+  type: 'multiple_choice'
+  question: string
+  options: string[]
+  answer: string
+}
+
+interface MultiBlankQuestion extends QuestionBase {
+  type: 'multi_blank'
+  question: string
+  options: string[]
+  answers: string[]
+}
+
+// Union Type
+export type QuizQuestion = MultipleChoiceQuestion | MultiBlankQuestion
+```
+
+---
+
+## 🛠️ API 設計建議（RESTful）
+
+### 認證與玩家管理
+
+* `POST /api/login` - 玩家登入
+* `POST /api/register` - 註冊新玩家
+* `GET /api/me` - 取得當前玩家資訊（需 JWT）
+
+### 題目管理
+
+* `GET /api/questions` - 取得題目列表（可依分類/難度/數量查詢）
+
+  > ✅ 加入 query params：`?categories=daily,travel&shuffle=true&limit=10`
+
+* `GET /api/questions/:id` - 查看指定題目
+
+* `POST /api/questions` - 新增題目（管理用途）
+
+### 遊戲房間與進度
+
+* `POST /api/rooms` - 建立新遊戲房間，需附上題目數與分類
+* `GET /api/rooms/:id` - 查詢房間狀態與玩家
+* `POST /api/rooms/:id/join` - 加入遊戲房間
+* `POST /api/rooms/:id/submit` - 提交答案
+* `GET /api/rooms/:id/result` - 取得最終結果與排名
+
+### WebSocket Event 建議（使用 Flask-SocketIO 實作）
+
+```ts
+// client -> server
+'submit_answer': { player_id, room_id, answer }
+'join_room': { player_id, room_id }
+
+// server -> client
+'question': QuizQuestion
+'player_update': { player_id, status, score }
+'game_result': { rankings: Player[] }
+```
+
+---
+
+## 🐍 Python 技術棧建議（Flask-based）
+
+### Backend 技術：
+
+* Flask
+* Flask-SocketIO
+* Flask-JWT-Extended
+* Flask-SQLAlchemy
+* Marshmallow
+* Flask-Migrate
+
+### 套件安裝建議：
+
+```bash
+pip install flask flask-socketio flask-jwt-extended flask-sqlalchemy flask-migrate marshmallow
+```
+
+---
+
+## 🎮 額外功能建議
+
+* 玩家選擇題目分類進行練習。
+* 題目可混合分類並隨機排序。
+* 每題可附語音朗讀。
+* 顯示正確答案與解釋。
+* 累計分數與進度追蹤。
+
+---
+
+📌 若需擴充題型如「句子重組」或「配對題」可進一步擴展 `type` 字段。
+
+☑️ 準備好資料後可以接著設計 API 或 UI 流程。

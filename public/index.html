@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 英文對答遊戲</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #4facfe;
+            padding-bottom: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .error {
+            background: #ffebee;
+            border-left-color: #f44336;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .status.connected {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .status.disconnected {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .question-display {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 2px solid #4facfe;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .option-btn {
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .option-btn:hover {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+        
+        .option-btn.selected {
+            border-color: #4facfe;
+            background: #4facfe;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 英文對答遊戲</h1>
+            <p>多人即時英文學習遊戲</p>
+        </div>
+        
+        <div class="content">
+            <!-- 連線狀態 -->
+            <div class="section">
+                <h2>🔌 連線狀態</h2>
+                <div id="connection-status" class="status disconnected">
+                    未連線
+                </div>
+                <button onclick="connectSocket()">連線 WebSocket</button>
+            </div>
+            
+            <!-- 認證 -->
+            <div class="section">
+                <h2>🔐 認證</h2>
+                <div class="form-group">
+                    <label>使用者名稱:</label>
+                    <input type="text" id="username" placeholder="輸入使用者名稱">
+                </div>
+                <div class="form-group">
+                    <label>電子郵件:</label>
+                    <input type="email" id="email" placeholder="輸入電子郵件">
+                </div>
+                <div class="form-group">
+                    <label>密碼:</label>
+                    <input type="password" id="password" placeholder="輸入密碼">
+                </div>
+                <button onclick="register()">註冊</button>
+                <button onclick="login()">登入</button>
+                <div id="auth-result"></div>
+            </div>
+            
+            <!-- 題目測試 -->
+            <div class="section">
+                <h2>📝 題目測試</h2>
+                <button onclick="getCategories()">取得題目分類</button>
+                <button onclick="getQuestions()">取得題目列表</button>
+                <div id="questions-result"></div>
+            </div>
+            
+            <!-- 房間測試 -->
+            <div class="section">
+                <h2>🏠 房間測試</h2>
+                <div class="form-group">
+                    <label>房間名稱:</label>
+                    <input type="text" id="room-name" placeholder="輸入房間名稱" value="測試房間">
+                </div>
+                <div class="form-group">
+                    <label>最大玩家數:</label>
+                    <input type="number" id="max-players" value="5" min="2" max="20">
+                </div>
+                <div class="form-group">
+                    <label>題目數量:</label>
+                    <input type="number" id="total-rounds" value="5" min="1" max="50">
+                </div>
+                <button onclick="createRoom()">建立房間</button>
+                <button onclick="getRooms()">取得房間列表</button>
+                <div id="room-result"></div>
+            </div>
+            
+            <!-- 遊戲測試 -->
+            <div class="section">
+                <h2>🎮 遊戲測試</h2>
+                <div class="form-group">
+                    <label>房間 ID:</label>
+                    <input type="text" id="room-id" placeholder="輸入房間 ID">
+                </div>
+                <button onclick="joinRoom()">加入房間</button>
+                <button onclick="startGame()">開始遊戲</button>
+                <button onclick="getCurrentQuestion()">取得當前題目</button>
+                <div id="game-result"></div>
+            </div>
+            
+            <!-- 題目顯示區域 -->
+            <div id="question-display" class="question-display" style="display: none;">
+                <h3>當前題目</h3>
+                <div id="question-text"></div>
+                <div id="question-options" class="options"></div>
+                <button onclick="submitAnswer()">提交答案</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        let socket = null;
+        let token = null;
+        let currentRoom = null;
+        let currentQuestion = null;
+        
+        // WebSocket 連線
+        function connectSocket() {
+            if (socket) {
+                socket.disconnect();
+            }
+            
+            socket = io('http://localhost:5000');
+            
+            socket.on('connect', () => {
+                updateConnectionStatus('已連線', 'connected');
+                console.log('WebSocket 已連線');
+            });
+            
+            socket.on('disconnect', () => {
+                updateConnectionStatus('未連線', 'disconnected');
+                console.log('WebSocket 已斷線');
+            });
+            
+            socket.on('player_joined_socket', (data) => {
+                console.log('玩家加入:', data);
+                showResult('game-result', `玩家 ${data.username} 加入了房間`);
+            });
+            
+            socket.on('game_started', (data) => {
+                console.log('遊戲開始:', data);
+                showResult('game-result', '遊戲已開始！');
+            });
+        }
+        
+        function updateConnectionStatus(message, className) {
+            const status = document.getElementById('connection-status');
+            status.textContent = message;
+            status.className = `status ${className}`;
+        }
+        
+        // API 請求輔助函式
+        async function apiRequest(endpoint, options = {}) {
+            const url = `${API_BASE}${endpoint}`;
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                ...options
+            };
+            
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+            
+            try {
+                const response = await fetch(url, config);
+                const data = await response.json();
+                return { status: response.status, data };
+            } catch (error) {
+                console.error('API 請求失敗:', error);
+                return { status: 500, data: { error: '網路錯誤' } };
+            }
+        }
+        
+        function showResult(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${isError ? 'error' : ''}">${message}</div>`;
+        }
+        
+        // 認證功能
+        async function register() {
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !email || !password) {
+                showResult('auth-result', '請填寫所有欄位', true);
+                return;
+            }
+            
+            const result = await apiRequest('/auth/register', {
+                method: 'POST',
+                body: JSON.stringify({ username, email, password })
+            });
+            
+            if (result.status === 201) {
+                showResult('auth-result', '註冊成功！');
+            } else {
+                showResult('auth-result', `註冊失敗: ${result.data.error}`, true);
+            }
+        }
+        
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                showResult('auth-result', '請填寫使用者名稱和密碼', true);
+                return;
+            }
+            
+            const result = await apiRequest('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ username, password })
+            });
+            
+            if (result.status === 200) {
+                token = result.data.access_token;
+                showResult('auth-result', '登入成功！');
+                console.log('Token:', token);
+            } else {
+                showResult('auth-result', `登入失敗: ${result.data.error}`, true);
+            }
+        }
+        
+        // 題目功能
+        async function getCategories() {
+            const result = await apiRequest('/questions/categories');
+            if (result.status === 200) {
+                showResult('questions-result', `題目分類: ${result.data.categories.join(', ')}`);
+            } else {
+                showResult('questions-result', `取得分類失敗: ${result.data.error}`, true);
+            }
+        }
+        
+        async function getQuestions() {
+            const result = await apiRequest('/questions?limit=3&shuffle=true');
+            if (result.status === 200) {
+                const questions = result.data.questions;
+                let html = '<h4>題目列表:</h4>';
+                questions.forEach((q, i) => {
+                    html += `<p><strong>${i+1}.</strong> ${q.question} (${q.category})</p>`;
+                });
+                document.getElementById('questions-result').innerHTML = html;
+            } else {
+                showResult('questions-result', `取得題目失敗: ${result.data.error}`, true);
+            }
+        }
+        
+        // 房間功能
+        async function createRoom() {
+            const name = document.getElementById('room-name').value;
+            const maxPlayers = parseInt(document.getElementById('max-players').value);
+            const totalRounds = parseInt(document.getElementById('total-rounds').value);
+            
+            if (!name) {
+                showResult('room-result', '請輸入房間名稱', true);
+                return;
+            }
+            
+            const result = await apiRequest('/rooms', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name,
+                    max_players: maxPlayers,
+                    total_rounds: totalRounds,
+                    categories: ['日常生活（Daily Conversation）', '旅遊與交通（Travel & Transport）']
+                })
+            });
+            
+            if (result.status === 201) {
+                currentRoom = result.data.room.id;
+                document.getElementById('room-id').value = currentRoom;
+                showResult('room-result', `房間建立成功！房間 ID: ${currentRoom}`);
+            } else {
+                showResult('room-result', `建立房間失敗: ${result.data.error}`, true);
+            }
+        }
+        
+        async function getRooms() {
+            const result = await apiRequest('/rooms');
+            if (result.status === 200) {
+                const rooms = result.data.rooms;
+                let html = '<h4>房間列表:</h4>';
+                rooms.forEach(room => {
+                    html += `<p><strong>${room.name}</strong> (ID: ${room.id}) - 玩家: ${room.player_count}/${room.max_players}</p>`;
+                });
+                document.getElementById('room-result').innerHTML = html;
+            } else {
+                showResult('room-result', `取得房間列表失敗: ${result.data.error}`, true);
+            }
+        }
+        
+        async function joinRoom() {
+            const roomId = document.getElementById('room-id').value;
+            if (!roomId) {
+                showResult('game-result', '請輸入房間 ID', true);
+                return;
+            }
+            
+            const result = await apiRequest(`/rooms/${roomId}/join`, {
+                method: 'POST'
+            });
+            
+            if (result.status === 200) {
+                currentRoom = roomId;
+                showResult('game-result', '成功加入房間！');
+                
+                // 加入 WebSocket 房間
+                if (socket && token) {
+                    socket.emit('join_room', { room_id: roomId, token: token });
+                }
+            } else {
+                showResult('game-result', `加入房間失敗: ${result.data.error}`, true);
+            }
+        }
+        
+        async function startGame() {
+            if (!currentRoom) {
+                showResult('game-result', '請先加入房間', true);
+                return;
+            }
+            
+            const result = await apiRequest(`/rooms/${currentRoom}/start`, {
+                method: 'POST'
+            });
+            
+            if (result.status === 200) {
+                showResult('game-result', '遊戲開始！');
+            } else {
+                showResult('game-result', `開始遊戲失敗: ${result.data.error}`, true);
+            }
+        }
+        
+        async function getCurrentQuestion() {
+            if (!currentRoom) {
+                showResult('game-result', '請先加入房間', true);
+                return;
+            }
+            
+            const result = await apiRequest(`/game/${currentRoom}/current-question`);
+            
+            if (result.status === 200) {
+                currentQuestion = result.data.question;
+                displayQuestion(currentQuestion);
+                showResult('game-result', '已取得當前題目');
+            } else {
+                showResult('game-result', `取得題目失敗: ${result.data.error}`, true);
+            }
+        }
+        
+        function displayQuestion(question) {
+            document.getElementById('question-text').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('question-options');
+            optionsContainer.innerHTML = '';
+            
+            if (question.type === 'multiple_choice') {
+                question.options.forEach((option, index) => {
+                    const button = document.createElement('button');
+                    button.className = 'option-btn';
+                    button.textContent = option;
+                    button.onclick = () => selectOption(option);
+                    optionsContainer.appendChild(button);
+                });
+            } else if (question.type === 'multi_blank') {
+                // 多重填空題的處理
+                const info = document.createElement('div');
+                info.innerHTML = `<p>多重填空題，請選擇 ${question.answer.length} 個答案</p>`;
+                optionsContainer.appendChild(info);
+                
+                question.options.forEach((option, index) => {
+                    const button = document.createElement('button');
+                    button.className = 'option-btn';
+                    button.textContent = option;
+                    button.onclick = () => selectMultiOption(option, button);
+                    optionsContainer.appendChild(button);
+                });
+            }
+            
+            document.getElementById('question-display').style.display = 'block';
+        }
+        
+        let selectedOptions = [];
+        
+        function selectOption(option) {
+            // 清除之前的選擇
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // 選擇當前選項
+            event.target.classList.add('selected');
+            selectedOptions = [option];
+        }
+        
+        function selectMultiOption(option, button) {
+            if (button.classList.contains('selected')) {
+                button.classList.remove('selected');
+                selectedOptions = selectedOptions.filter(opt => opt !== option);
+            } else {
+                button.classList.add('selected');
+                selectedOptions.push(option);
+            }
+        }
+        
+        async function submitAnswer() {
+            if (!currentQuestion || selectedOptions.length === 0) {
+                alert('請選擇答案');
+                return;
+            }
+            
+            const answer = currentQuestion.type === 'multiple_choice' ? selectedOptions[0] : selectedOptions;
+            const timeTaken = Math.random() * 30 + 5; // 模擬答題時間
+            
+            const result = await apiRequest(`/game/${currentRoom}/submit-answer`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    answer: answer,
+                    time_taken: timeTaken
+                })
+            });
+            
+            if (result.status === 200) {
+                const isCorrect = result.data.is_correct;
+                showResult('game-result', `答案提交成功！${isCorrect ? '正確' : '錯誤'}。正確答案: ${JSON.stringify(result.data.correct_answer)}`);
+                
+                // 透過 WebSocket 發送答案
+                if (socket && token) {
+                    socket.emit('submit_answer_socket', {
+                        room_id: currentRoom,
+                        token: token,
+                        answer: answer,
+                        time_taken: timeTaken
+                    });
+                }
+            } else {
+                showResult('game-result', `提交答案失敗: ${result.data.error}`, true);
+            }
+        }
+        
+        // 頁面載入時自動連線 WebSocket
+        window.onload = function() {
+            connectSocket();
+        };
+    </script>
+</body>
+</html> 

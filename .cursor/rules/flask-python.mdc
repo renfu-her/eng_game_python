@@ -1,0 +1,137 @@
+---
+alwaysApply: true
+---
+## 🔧 專業領域：Python、Flask 與可擴展 API 開發
+
+---
+
+### 📌 核心原則
+
+* 撰寫**簡潔、技術性**高的回應，並附上正確的 Python 範例。
+* 優先使用**函數式、宣告式**程式風格；除非必要（如 Flask View），避免使用 class。
+* 偏好**迭代與模組化**，避免重複程式碼。
+* 使用具描述性的變數名稱，包含輔助動詞（如：`is_active`, `has_permission`）。
+* 檔案與資料夾名稱使用**小寫加底線**格式（例如：`blueprints/user_routes.py`）。
+* 路由與工具函式使用**具名匯出**。
+* 適用時使用 **RORO（接收物件，回傳物件）模式**。
+
+---
+
+### 🐍 Python / Flask 撰寫準則
+
+* 使用 `def` 定義函式。
+* 所有函式需加上**型別註記（type hints）**。
+* 檔案結構建議包含：Flask 應用初始化、Blueprints、資料模型、工具類、設定。
+* 避免不必要的大括號。
+* 單行條件語句**省略大括號**。
+* 簡單邏輯使用一行語法（例如：`if condition: do_something()`）。
+
+---
+
+### ⚠️ 錯誤處理與驗證原則
+
+* 優先處理錯誤與邊界條件：
+
+  * 函式一開始就處理錯誤或不合法情況。
+  * 使用 **early return（提前返回）**，避免巢狀 `if`。
+  * 快樂路徑（成功流程）寫在最後，提升可讀性。
+  * 避免不必要的 `else`，改用 `if-return` 模式。
+  * 使用\*\*守衛條件（guard clause）\*\*處理前置條件。
+  * 正確記錄錯誤日誌，並提供使用者友善訊息。
+  * 建立**自訂錯誤型別或錯誤工廠**，統一錯誤處理格式。
+
+---
+
+### 📦 相依套件
+
+* `Flask`
+* `Flask-RESTful`
+* `Flask-SQLAlchemy`
+* `Flask-Migrate`
+* `Marshmallow`
+* `Flask-JWT-Extended`
+
+---
+
+### 🔩 Flask 特定實作建議
+
+* 使用\*\*Flask 應用工廠（Application Factory）\*\*增加模組化與可測性。
+* 使用**Blueprints** 組織路由，維持清晰結構。
+* RESTful API 建議使用 `Flask-RESTful` 搭配 class-based views。
+* 實作自定義錯誤處理器處理不同異常。
+* 善用 `before_request`、`after_request`、`teardown_request` 管理請求生命週期。
+* 擴充功能使用官方擴充套件（如 `Flask-Migrate`、`Flask-Caching` 等）。
+* 使用 `app.config` 管理不同環境設定（開發、測試、正式）。
+* 使用 `app.logger` 建立完整日誌記錄。
+* 認證與授權使用 `Flask-JWT-Extended` 實作。
+
+---
+
+### 🚀 效能優化
+
+* 常取資料使用 `Flask-Caching` 快取。
+* 資料庫查詢使用**預先加載（eager loading）**、索引等技巧。
+* 使用連線池（connection pooling）。
+* 正確管理資料庫 session。
+* 執行時間長的操作（如寄信）使用背景工作（如 Celery）處理。
+
+---
+
+### 📐 架構與規範
+
+1. 正確使用 Flask 的**應用與請求上下文（context）**。
+2. 優化 API 的效能指標（回應時間、延遲、吞吐量）。
+3. 應用架構：
+
+   * 使用 Blueprint 進行模組化。
+   * 路由、商業邏輯、資料層**明確分離**。
+   * 配置使用環境變數（`.env`）管理。
+
+---
+
+### 🗃️ 資料庫互動
+
+* ORM 操作使用 `Flask-SQLAlchemy`。
+* 資料庫遷移使用 `Flask-Migrate`。
+* 正確關閉 session，避免連線洩漏。
+
+---
+
+### 📦 序列化與驗證
+
+* 使用 `Marshmallow` 進行序列化與反序列化，以及表單輸入驗證。
+* 每個模型對應一個 schema class，統一資料轉換格式。
+
+---
+
+### 🔐 認證與授權
+
+* 實作 JWT 認證使用 `Flask-JWT-Extended`。
+* 使用裝飾器保護需認證的路由。
+
+---
+
+### 🧪 測試建議
+
+* 單元測試使用 `pytest`。
+* 整合測試使用 Flask 的 `test_client()`。
+* 使用 fixture 建立測試資料與環境。
+
+---
+
+### 📚 API 文件
+
+* 使用 `Flask-RESTX` 或 `Flasgger` 自動產生 OpenAPI/Swagger 文件。
+* 所有 API 須明確標註請求與回應的 schema。
+
+---
+
+### ☁️ 部署建議
+
+* 部署使用 `Gunicorn` 或 `uWSGI`。
+* 生產環境需設置**正確的日誌與監控機制**。
+* 所有敏感設定與參數使用環境變數管理。
+
+---
+
+📘 **建議參考官方 Flask 文件以獲得最佳實踐，特別是 Views、Blueprints、Extensions 的使用方式。**
