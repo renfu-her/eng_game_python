@@ -41,13 +41,17 @@ def create_app(config_name=None):
     import socket_events
     
     # 靜態檔案路由
-    @app.route('/public/<path:filename>')
-    def public_files(filename):
-        return app.send_static_file(f'public/{filename}')
-    
-    @app.route('/')
-    def index():
-        return app.send_static_file('public/index.html')
+@app.route('/public/<path:filename>')
+def public_files(filename):
+    return app.send_static_file(f'public/{filename}')
+
+@app.route('/')
+def index():
+    return app.send_static_file('public/index.html')
+
+@app.route('/admin')
+def admin():
+    return app.send_static_file('public/admin.html')
     
     # 錯誤處理
     @app.errorhandler(404)

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 管理後台 - 英文對答遊戲</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- 自定義 CSS -->
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-cogs me-2"></i>管理後台
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="admin.showDashboard()">
+                            <i class="fas fa-tachometer-alt me-1"></i>儀表板
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="admin.showQuestions()">
+                            <i class="fas fa-question-circle me-1"></i>題目管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="admin.showUsers()">
+                            <i class="fas fa-users me-1"></i>使用者管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="admin.showRooms()">
+                            <i class="fas fa-door-open me-1"></i>房間管理
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="admin.showStats()">
+                            <i class="fas fa-chart-bar me-1"></i>統計資料
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="navbar-nav">
+                    <div id="adminInfo" class="navbar-text me-3"></div>
+                    <button class="btn btn-outline-light" onclick="admin.logout()">
+                        <i class="fas fa-sign-out-alt me-1"></i>登出
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要內容區 -->
+    <div class="container-fluid mt-4">
+        <!-- 儀表板 -->
+        <div id="dashboardSection">
+            <div class="row">
+                <div class="col-12">
+                    <h2><i class="fas fa-tachometer-alt me-2"></i>儀表板</h2>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="game-card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                            <h4 id="totalUsers">0</h4>
+                            <p class="text-muted">總使用者數</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="game-card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-question-circle fa-3x text-success mb-3"></i>
+                            <h4 id="totalQuestions">0</h4>
+                            <p class="text-muted">總題目數</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="game-card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-door-open fa-3x text-warning mb-3"></i>
+                            <h4 id="activeRooms">0</h4>
+                            <p class="text-muted">活躍房間</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="game-card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-gamepad fa-3x text-info mb-3"></i>
+                            <h4 id="totalGames">0</h4>
+                            <p class="text-muted">總遊戲數</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="game-card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-chart-line me-2"></i>最近活動</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="recentActivity">
+                                <!-- 最近活動將在這裡動態載入 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="game-card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-exclamation-triangle me-2"></i>系統狀態</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="systemStatus">
+                                <!-- 系統狀態將在這裡動態載入 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 題目管理 -->
+        <div id="questionsSection" style="display: none;">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2><i class="fas fa-question-circle me-2"></i>題目管理</h2>
+                        <button class="btn btn-primary" onclick="admin.showAddQuestionModal()">
+                            <i class="fas fa-plus me-2"></i>新增題目
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div class="game-card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-list me-2"></i>題目列表</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>題目</th>
+                                            <th>分類</th>
+                                            <th>難度</th>
+                                            <th>類型</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="questionsTable">
+                                        <!-- 題目列表將在這裡動態載入 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 使用者管理 -->
+        <div id="usersSection" style="display: none;">
+            <div class="row">
+                <div class="col-12">
+                    <h2><i class="fas fa-users me-2"></i>使用者管理</h2>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div class="game-card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-list me-2"></i>使用者列表</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>使用者名稱</th>
+                                            <th>電子郵件</th>
+                                            <th>註冊時間</th>
+                                            <th>狀態</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="usersTable">
+                                        <!-- 使用者列表將在這裡動態載入 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 房間管理 -->
+        <div id="roomsSection" style="display: none;">
+            <div class="row">
+                <div class="col-12">
+                    <h2><i class="fas fa-door-open me-2"></i>房間管理</h2>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div class="game-card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-list me-2"></i>房間列表</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>房間名稱</th>
+                                            <th>建立者</th>
+                                            <th>玩家數</th>
+                                            <th>狀態</th>
+                                            <th>建立時間</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="roomsTable">
+                                        <!-- 房間列表將在這裡動態載入 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 統計資料 -->
+        <div id="statsSection" style="display: none;">
+            <div class="row">
+                <div class="col-12">
+                    <h2><i class="fas fa-chart-bar me-2"></i>統計資料</h2>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="game-card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-chart-pie me-2"></i>題目分類統計</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="game-card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-chart-line me-2"></i>遊戲趨勢</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增題目模態框 -->
+    <div class="modal fade" id="addQuestionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>新增題目
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addQuestionForm">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="questionText" class="form-label">題目內容</label>
+                                <textarea class="form-control" id="questionText" rows="3" required></textarea>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="questionCategory" class="form-label">分類</label>
+                                <select class="form-control" id="questionCategory" required>
+                                    <option value="">選擇分類</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="questionDifficulty" class="form-label">難度</label>
+                                <select class="form-control" id="questionDifficulty" required>
+                                    <option value="easy">簡單</option>
+                                    <option value="medium">中等</option>
+                                    <option value="hard">困難</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="questionType" class="form-label">題型</label>
+                                <select class="form-control" id="questionType" required>
+                                    <option value="multiple_choice">選擇題</option>
+                                    <option value="multi_blank">多重填空</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="questionOptions" class="form-label">選項（用逗號分隔）</label>
+                                <input type="text" class="form-control" id="questionOptions" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="questionAnswer" class="form-label">正確答案</label>
+                                <input type="text" class="form-control" id="questionAnswer" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="questionExplanation" class="form-label">解釋</label>
+                            <textarea class="form-control" id="questionExplanation" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>新增題目
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript 依賴 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- 管理後台 JavaScript -->
+    <script src="js/admin.js"></script>
+</body>
+</html> 
