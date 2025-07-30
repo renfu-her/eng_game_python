@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>調試頁面</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+    <h1>調試頁面</h1>
+    
+    <!-- 認證區塊 -->
+    <div id="authSection" class="text-center py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>歡迎來到英文對答遊戲</h3>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="lead mb-4">透過有趣的多人遊戲提升您的英文能力！</p>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <button class="btn btn-primary w-100" id="loginBtn">
+                                    登入
+                                </button>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <button class="btn btn-success w-100" id="registerBtn">
+                                    註冊
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 遊戲區塊 -->
+    <div id="gameSection" style="display: none;">
+        <p>遊戲區塊</p>
+    </div>
+    
+    <script>
+        $(document).ready(() => {
+            console.log('調試頁面已載入');
+            
+            // 測試 showLoginSection 功能
+            function showLoginSection() {
+                $('#authSection').show();
+                $('#gameSection').hide();
+                console.log('showLoginSection 被調用');
+                console.log('authSection 顯示狀態:', $('#authSection').is(':visible'));
+                console.log('gameSection 顯示狀態:', $('#gameSection').is(':visible'));
+            }
+            
+            // 自動調用 showLoginSection
+            showLoginSection();
+            
+            // 測試按鈕事件
+            $('#loginBtn').on('click', () => {
+                alert('登入按鈕被點擊');
+            });
+            
+            $('#registerBtn').on('click', () => {
+                alert('註冊按鈕被點擊');
+            });
+        });
+    </script>
+</body>
+</html> 

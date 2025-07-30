@@ -41,11 +41,11 @@
                 </ul>
                 
                 <!-- 認證區塊 -->
-                <div id="authSection" class="navbar-nav">
-                    <button class="btn btn-outline-light me-2" id="loginBtn">
+                <div id="navbarAuthSection" class="navbar-nav">
+                    <button class="btn btn-outline-light me-2" id="navbarLoginBtn">
                         <i class="fas fa-sign-in-alt me-1"></i>登入
                     </button>
-                    <button class="btn btn-light" id="registerBtn">
+                    <button class="btn btn-light" id="navbarRegisterBtn">
                         <i class="fas fa-user-plus me-1"></i>註冊
                     </button>
                 </div>
@@ -253,7 +253,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                        <button type="submit" class="btn btn-primary" id="loginBtn">
+                        <button type="submit" class="btn btn-primary" id="loginSubmitBtn">
                             <i class="fas fa-sign-in-alt me-2"></i>登入
                         </button>
                     </div>
@@ -289,7 +289,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                        <button type="submit" class="btn btn-success" id="registerBtn">
+                        <button type="submit" class="btn btn-success" id="registerSubmitBtn">
                             <i class="fas fa-user-plus me-2"></i>註冊
                         </button>
                     </div>
@@ -347,7 +347,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                        <button type="submit" class="btn btn-primary" id="createRoomBtn">
+                        <button type="submit" class="btn btn-primary" id="createRoomSubmitBtn">
                             <i class="fas fa-plus me-2"></i>建立房間
                         </button>
                     </div>
@@ -363,5 +363,11 @@
     
     <!-- 自定義 JavaScript -->
     <script src="js/app.js"></script>
+    <script>
+        // 初始化應用程式
+        $(document).ready(() => {
+            window.gameApp = new EnglishGame();
+        });
+    </script>
 </body>
 </html> 

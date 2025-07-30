@@ -1,4 +1,6 @@
-from app import db
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 import uuid

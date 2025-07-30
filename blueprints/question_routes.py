@@ -9,7 +9,7 @@ question_bp = Blueprint('questions', __name__)
 
 class QuestionSchema(Schema):
     """題目驗證 Schema"""
-    category = fields.Str(required=True)
+    category_id = fields.Str(required=True)
     difficulty = fields.Str(required=True, validate=lambda x: x in ['easy', 'medium', 'hard'])
     question_type = fields.Str(required=True, validate=lambda x: x in ['multiple_choice', 'multi_blank'])
     question_text = fields.Str(required=True)
@@ -33,7 +33,16 @@ def get_questions():
         
         # 套用篩選條件
         if categories and categories[0]:
-            query = query.filter(Question.category.in_(categories))
+            # 根據分類名稱找到對應的 category_id
+            from models import Category
+            category_ids = []
+            for cat_name in categories:
+                category = Category.query.filter_by(display_name=cat_name).first()
+                if category:
+                    category_ids.append(category.id)
+            
+            if category_ids:
+                query = query.filter(Question.category_id.in_(category_ids))
         
         if difficulties and difficulties[0]:
             query = query.filter(Question.difficulty.in_(difficulties))
@@ -113,9 +122,11 @@ def create_question():
 def get_categories():
     """取得所有題目分類"""
     try:
-        categories = db.session.query(Question.category).distinct().all()
+        # 從 Category 表格取得所有分類
+        from models import Category
+        categories = Category.query.all()
         return jsonify({
-            'categories': [cat[0] for cat in categories]
+            'categories': [cat.display_name for cat in categories]
         }), 200
         
     except Exception as e:

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測試頁面</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+    <h1>JavaScript 測試</h1>
+    <div id="authSection" style="display: none;">
+        <p>認證區塊已顯示</p>
+        <button id="loginBtn">登入</button>
+        <button id="registerBtn">註冊</button>
+    </div>
+    <div id="gameSection">
+        <p>遊戲區塊</p>
+    </div>
+    
+    <script>
+        $(document).ready(() => {
+            console.log('jQuery 已載入');
+            
+            // 測試 showLoginSection
+            $('#authSection').show();
+            $('#gameSection').hide();
+            
+            console.log('authSection 顯示狀態:', $('#authSection').is(':visible'));
+            console.log('gameSection 顯示狀態:', $('#gameSection').is(':visible'));
+            
+            // 測試按鈕事件
+            $('#loginBtn').on('click', () => {
+                alert('登入按鈕被點擊');
+            });
+            
+            $('#registerBtn').on('click', () => {
+                alert('註冊按鈕被點擊');
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -1,13 +1,12 @@
 from flask import Flask, send_from_directory
 from flask_socketio import SocketIO
 from flask_jwt_extended import JWTManager
-from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
 import os
 
 # 初始化擴充套件
-db = SQLAlchemy()
+from models import db
 jwt = JWTManager()
 socketio = SocketIO()
 

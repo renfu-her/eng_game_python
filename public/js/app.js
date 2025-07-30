@@ -32,8 +32,8 @@ class EnglishGame {
      */
     setupEventListeners() {
         // 導航事件
-        $('#loginBtn').on('click', () => this.showLoginModal());
-        $('#registerBtn').on('click', () => this.showRegisterModal());
+        $('#loginBtn, #navbarLoginBtn').on('click', () => this.showLoginModal());
+        $('#registerBtn, #navbarRegisterBtn').on('click', () => this.showRegisterModal());
         $('#logoutBtn').on('click', () => this.logout());
         
         // 表單提交事件
@@ -263,7 +263,7 @@ class EnglishGame {
         };
         
         try {
-            this.showLoading('#loginBtn');
+            this.showLoading('#loginSubmitBtn');
             const data = await this.apiRequest('/auth/login', {
                 method: 'POST',
                 body: JSON.stringify(formData)
@@ -281,7 +281,7 @@ class EnglishGame {
         } catch (error) {
             console.error('登入失敗:', error);
         } finally {
-            this.hideLoading('#loginBtn');
+            this.hideLoading('#loginSubmitBtn');
         }
     }
 
@@ -296,7 +296,7 @@ class EnglishGame {
         };
         
         try {
-            this.showLoading('#registerBtn');
+            this.showLoading('#registerSubmitBtn');
             await this.apiRequest('/auth/register', {
                 method: 'POST',
                 body: JSON.stringify(formData)
@@ -309,7 +309,7 @@ class EnglishGame {
         } catch (error) {
             console.error('註冊失敗:', error);
         } finally {
-            this.hideLoading('#registerBtn');
+            this.hideLoading('#registerSubmitBtn');
         }
     }
 
@@ -377,7 +377,7 @@ class EnglishGame {
         };
         
         try {
-            this.showLoading('#createRoomBtn');
+            this.showLoading('#createRoomSubmitBtn');
             const data = await this.apiRequest('/rooms', {
                 method: 'POST',
                 body: JSON.stringify(formData)
@@ -391,7 +391,7 @@ class EnglishGame {
         } catch (error) {
             console.error('建立房間失敗:', error);
         } finally {
-            this.hideLoading('#createRoomBtn');
+            this.hideLoading('#createRoomSubmitBtn');
         }
     }
 

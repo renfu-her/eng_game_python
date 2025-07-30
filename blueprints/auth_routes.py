@@ -51,6 +51,7 @@ def register():
         return jsonify({'error': '驗證錯誤', 'details': e.messages}), 400
     except Exception as e:
         db.session.rollback()
+        print(f'註冊失敗錯誤: {e}')
         return jsonify({'error': '註冊失敗'}), 500
 
 @auth_bp.route('/login', methods=['POST'])
