@@ -662,7 +662,7 @@ class EnglishGame {
                 })
             });
             
-            this.showAnswerResult(data.is_correct, data.correct_answer);
+            this.showAnswerResult(data.is_correct, data.correct_answer, data.explanation);
             
         } catch (error) {
             console.error('提交答案失敗:', error);
@@ -672,8 +672,7 @@ class EnglishGame {
     /**
      * 顯示答案結果
      */
-    showAnswerResult(isCorrect, correctAnswer) {
-        const resultClass = isCorrect ? 'correct' : 'incorrect';
+    showAnswerResult(isCorrect, correctAnswer, explanation) {
         const resultText = isCorrect ? '答對了！' : '答錯了！';
         
         // 更新選項樣式
@@ -686,8 +685,49 @@ class EnglishGame {
             }
         });
         
+        // 顯示詳細結果
+        const resultHtml = `
+            <div class="text-center">
+                <div class="mb-3">
+                    <i class="fas fa-${isCorrect ? 'check-circle text-success' : 'times-circle text-danger'} fa-3x"></i>
+                </div>
+                <h4 class="${isCorrect ? 'text-success' : 'text-danger'}">
+                    ${resultText}
+                </h4>
+                <p class="text-muted">正確答案：${correctAnswer}</p>
+                ${explanation ? `<p class="text-info"><i class="fas fa-lightbulb me-1"></i>${explanation}</p>` : ''}
+                <div class="mt-3">
+                    <button class="btn btn-primary" onclick="game.waitForNextRound()">
+                        <i class="fas fa-clock me-1"></i>等待其他玩家
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        $('#questionContainer').html(resultHtml);
         this.showNotification(resultText, isCorrect ? 'success' : 'error');
         this.stopTimer();
+    }
+
+    /**
+     * 等待下一回合
+     */
+    waitForNextRound() {
+        const waitingHtml = `
+            <div class="text-center">
+                <div class="mb-3">
+                    <i class="fas fa-clock fa-3x text-primary"></i>
+                </div>
+                <h4 class="text-primary">等待其他玩家...</h4>
+                <p class="text-muted">其他玩家還在答題中</p>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" style="width: 100%"></div>
+                </div>
+            </div>
+        `;
+        
+        $('#questionContainer').html(waitingHtml);
     }
 
     /**
@@ -805,6 +845,79 @@ class EnglishGame {
         this.stopTimer();
         this.updateRoomInfo();
         this.loadRoomPlayers();
+        this.showGameResults(data.rankings);
+    }
+
+    /**
+     * 顯示遊戲結果
+     */
+    showGameResults(rankings) {
+        const resultsHtml = `
+            <div class="text-center">
+                <div class="mb-4">
+                    <i class="fas fa-trophy fa-3x text-warning"></i>
+                </div>
+                <h3 class="text-warning mb-4">遊戲結束！</h3>
+                
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>排名</th>
+                                        <th>玩家</th>
+                                        <th>分數</th>
+                                        <th>正確率</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rankings.map((player, index) => `
+                                        <tr class="${index === 0 ? 'table-warning' : ''}">
+                                            <td>
+                                                ${index === 0 ? '<i class="fas fa-crown text-warning"></i>' : ''}
+                                                ${player.rank}
+                                            </td>
+                                            <td>${player.username}</td>
+                                            <td>${player.score}</td>
+                                            <td>${player.accuracy}%</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <button class="btn btn-primary me-2" onclick="game.returnToLobby()">
+                        <i class="fas fa-home me-1"></i>返回大廳
+                    </button>
+                    <button class="btn btn-success" onclick="game.playAgain()">
+                        <i class="fas fa-redo me-1"></i>再玩一次
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        $('#questionContainer').html(resultsHtml);
+    }
+
+    /**
+     * 返回大廳
+     */
+    returnToLobby() {
+        this.currentRoom = null;
+        this.showRoomsSection();
+    }
+
+    /**
+     * 再玩一次
+     */
+    playAgain() {
+        if (this.currentRoom) {
+            this.joinRoom(this.currentRoom.id);
+        }
     }
 
     handleChatMessage(data) {

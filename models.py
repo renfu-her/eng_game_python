@@ -34,12 +34,35 @@ class User(db.Model):
             'created_at': self.created_at.isoformat()
         }
 
+class Category(db.Model):
+    """題目分類模型"""
+    __tablename__ = 'categories'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    display_name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # 關聯
+    questions = db.relationship('Question', backref='category', lazy=True)
+    
+    def to_dict(self) -> dict:
+        """轉換為字典"""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'display_name': self.display_name,
+            'description': self.description,
+            'question_count': len(self.questions)
+        }
+
 class Question(db.Model):
     """題目模型"""
     __tablename__ = 'questions'
     
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    category = db.Column(db.String(50), nullable=False, index=True)
+    category_id = db.Column(db.String(36), db.ForeignKey('categories.id'), nullable=False, index=True)
     difficulty = db.Column(db.String(20), nullable=False, index=True)  # easy, medium, hard
     question_type = db.Column(db.String(30), nullable=False)  # multiple_choice, multi_blank
     question_text = db.Column(db.Text, nullable=False)
@@ -52,7 +75,8 @@ class Question(db.Model):
         """轉換為字典"""
         return {
             'id': self.id,
-            'category': self.category,
+            'category': self.category.display_name if self.category else None,
+            'category_id': self.category_id,
             'difficulty': self.difficulty,
             'type': self.question_type,
             'question': self.question_text,
